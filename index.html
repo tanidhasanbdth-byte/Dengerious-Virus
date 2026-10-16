@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172033"><link rel="manifest" href="manifest.json">
+<title>Tanid Personal AI</title>
+<style>
+:root{--bg:#101827;--panel:#1b2940;--text:#f3f6fc;--muted:#aebbd0;--accent:#7aa2ff;--line:#33445e}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,Arial,sans-serif}
+header{padding:22px 18px;background:#172033;position:sticky;top:0;z-index:2;border-bottom:1px solid var(--line)}
+h1{font-size:23px;margin:0}header p{margin:5px 0 0;color:var(--muted);font-size:13px}
+main{max-width:720px;margin:auto;padding:16px;display:grid;gap:14px}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button,.tab{border:0;border-radius:12px;padding:12px;background:var(--panel);color:var(--text);font-weight:600;cursor:pointer}
+button.primary,.tab.active{background:var(--accent);color:#08142d}
+section{display:none;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;gap:12px}
+section.active{display:grid}h2{font-size:18px;margin:0}p.hint{font-size:13px;color:var(--muted);margin:0}
+input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#101827;color:var(--text);font:inherit}
+textarea{min-height:90px;resize:vertical}.row{display:flex;gap:8px}.row>*{flex:1}
+.item{padding:11px;border:1px solid var(--line);border-radius:10px;display:flex;gap:10px;align-items:flex-start}
+.item .body{flex:1;white-space:pre-wrap;overflow-wrap:anywhere}.item small{display:block;color:var(--muted);margin-top:4px}
+.item button{padding:6px 9px;background:#35445d}.done{text-decoration:line-through;color:var(--muted)}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:6px 16px 24px}
+a{color:#b7ccff}
+</style></head>
+<body>
+<header><h1>✦ Tanid Personal AI</h1><p>Your private notes, tasks and AI shortcuts · বাংলা + English</p></header>
+<main>
+<nav>
+<button class="tab active" data-tab="home">Home</button><button class="tab" data-tab="notes">Notes</button><button class="tab" data-tab="tasks">Tasks</button>
+</nav>
+<section id="home" class="active">
+<h2>Welcome 👋</h2><p class="hint">এই MVP ফোনে আপনার Notes ও Tasks সেভ করে। AI-এর জন্য অনলাইন শর্টকাট এবং আলাদা অফলাইন AI অ্যাপ ব্যবহার করুন।</p>
+<div class="row"><button class="primary" id="chatgpt">Open ChatGPT</button><button class="primary" id="gemini">Open Gemini</button></div>
+<button id="offline">Offline AI setup guide</button>
+<div style="border-top:1px solid var(--line);padding-top:12px;display:grid;gap:8px">
+<h2>Voice tools</h2><p class="hint">মাইক্রোফোন দিয়ে কথা লিখে নিতে পারবেন—ব্রাউজার/ভাষা সাপোর্টের ওপর নির্ভর করে; সবসময় অফলাইনে কাজ নাও করতে পারে।</p>
+<textarea id="voiceText" placeholder="এখানে ভয়েসে বলা কথা আসবে…"></textarea>
+<div class="row"><button id="listen">🎙️ Start voice typing</button><button id="speak">🔊 Read aloud</button></div>
+</div>
+<p class="hint">AI shortcut খুললে ChatGPT/Gemini আলাদা ওয়েবসাইটে যাবে। এই অ্যাপ নিজে এখনো AI model চালায় না।</p>
+</section>
+<section id="notes">
+<h2>My Notes / আমার নোট</h2><input id="noteTitle" placeholder="Note title / নোটের শিরোনাম"><textarea id="noteBody" placeholder="Write a note… / নোট লিখুন"></textarea>
+<button class="primary" id="saveNote">Save note</button><div id="notesList"></div>
+</section>
+<section id="tasks">
+<h2>My Tasks / আমার কাজ</h2><input id="taskText" placeholder="What do you need to do? / কী কাজ করতে হবে?"><input id="taskDate" type="date"><button class="primary" id="addTask">Add task</button><div id="tasksList"></div>
+</section>
+</main><footer>Personal MVP · Notes and tasks stay in this browser on this device. Export/back up important notes.</footer>
+<script>
+const $=id=>document.getElementById(id);
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('section').forEach(x=>x.classList.toggle('active',x.id===b.dataset.tab));});
+$('chatgpt').onclick=()=>window.open('https://chatgpt.com/','_blank','noopener');
+$('gemini').onclick=()=>window.open('https://gemini.google.com/','_blank','noopener');
+$('offline').onclick=()=>window.open('https://play.google.com/store/apps/details?id=com.google.ai.edge.gallery','_blank','noopener');
+const get=(k)=>JSON.parse(localStorage.getItem('tpa_'+k)||'[]'), put=(k,v)=>localStorage.setItem('tpa_'+k,JSON.stringify(v));
+function renderNotes(){let ns=get('notes');$('notesList').innerHTML='';ns.slice().reverse().forEach((n,rev)=>{let i=ns.length-1-rev,d=document.createElement('div');d.className='item';let body=document.createElement('div');body.className='body';body.textContent=n.title+'\\n'+n.body;let del=document.createElement('button');del.textContent='Delete';del.onclick=()=>{let a=get('notes');a.splice(i,1);put('notes',a);renderNotes()};d.append(body,del);$('notesList').append(d)})}
+$('saveNote').onclick=()=>{let title=$('noteTitle').value.trim(),body=$('noteBody').value.trim();if(!title&&!body)return alert('Write a note first.');let a=get('notes');a.push({title:title||'Untitled',body,date:new Date().toISOString()});put('notes',a);$('noteTitle').value='';$('noteBody').value='';renderNotes()};
+function renderTasks(){let ts=get('tasks');$('tasksList').innerHTML='';ts.forEach((t,i)=>{let d=document.createElement('div');d.className='item';let c=document.createElement('input');c.type='checkbox';c.checked=t.done;c.style.width='20px';c.onchange=()=>{let a=get('tasks');a[i].done=c.checked;put('tasks',a);renderTasks()};let body=document.createElement('div');body.className='body'+(t.done?' done':'');body.textContent=t.text;let small=document.createElement('small');small.textContent=t.date?'Due: '+t.date:'';body.append(small);let del=document.createElement('button');del.textContent='×';del.setAttribute('aria-label','Delete task');del.onclick=()=>{let a=get('tasks');a.splice(i,1);put('tasks',a);renderTasks()};d.append(c,body,del);$('tasksList').append(d)})}
+$('addTask').onclick=()=>{let text=$('taskText').value.trim();if(!text)return alert('Enter a task first.');let a=get('tasks');a.push({text,date:$('taskDate').value,done:false});put('tasks',a);$('taskText').value='';renderTasks()};
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+$('listen').onclick=()=>{if(!SR){alert('Speech typing is not supported in this browser. Try Chrome and check microphone permission.');return;}let r=new SR();r.lang='bn-BD';r.interimResults=false;r.onresult=e=>$('voiceText').value+=( $('voiceText').value?' ':'')+e.results[0][0].transcript;r.onerror=e=>alert('Voice error: '+e.error);r.start()};
+$('speak').onclick=()=>{let t=$('voiceText').value.trim();if(!t)return alert('Enter text first.');if(!('speechSynthesis'in window))return alert('Text-to-speech is not supported here.');let u=new SpeechSynthesisUtterance(t);u.lang=/[\\u0980-\\u09FF]/.test(t)?'bn-BD':'en-US';speechSynthesis.speak(u)};
+if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+renderNotes();renderTasks();
+</script></body></html>

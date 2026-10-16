@@ -1,0 +1,13 @@
+{
+  "name":"Tanid Personal AI",
+  "short_name":"Tanid AI",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#101827",
+  "theme_color":"#172033",
+  "description":"Personal notes, tasks and AI shortcuts",
+  "icons":[
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
